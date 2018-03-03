@@ -4,6 +4,10 @@ import random
 import json
 import numpy as np
 
+@bottle.route('/')
+def static():
+    return "the server is running"
+
 @bottle.route('/static/<path:path>')
 def static(path):
     return bottle.static_file(path, root='static/')
