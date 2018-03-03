@@ -51,68 +51,94 @@ def getBoard(data):
             board[x, y] = 0
 
     # add food to board
-    food = []
     for i in range(len(data['food']['data'])):
         x = data['food']['data'][i]['x'] + 1
         y = data['food']['data'][i]['y'] + 1
-        food.append([x, y])
-        board[x, y] = 2
-    
-    return board, food
+        board[x, y] *= 10
 
-def getDirection(data, board, food):
-    # get player snakes head
-    x = data['you']['body']['data'][0]['x'] + 1
-    y = data['you']['body']['data'][0]['y'] + 1
-    head = [x, y]
+    # add weight to board
+    absmax = [0, 0]
+    for x in range(width):
+        for y in range(height):
+            board[x, y] = getWeight(board, x, y)
+            if board[x, y] > board[absmax[0], absmax[1]]:
+                absmax = [x, y]
 
-    # find closest food
-    for i in range(len(food)):
-        x = food[i][0] - head[0]
-        y = food[i][1] - head[1]
-        food[i] = [x, y]
-    closest = np.amin(food, axis=0)
+    return board, absmax
+
+def getWeight(board, x, y):
+    weight = 0
+    value = board[x, y]
+    while(True):
+        if board[x + weight, y] == 0:
+            value *= (weight + 1)
+            break
+        weight += 1
+    weight = 0
+    while(True):
+        if board[x - weight, y] == 0:
+            value *= (weight + 1)
+            break
+        weight += 1
+    weight = 0
+    while(True):
+        if board[x, y + weight] == 0:
+            value *= (weight + 1)
+            break
+        weight += 1
+    weight = 0
+    while(True):
+        if board[x, y - weight] == 0:
+            value *= (weight + 1)
+            break
+        weight += 1
     
+    return value
+
+def getDirection(data, board, absmax, head):
+    absmax = [absmax[0] - head[0], absmax[1] - head[1]]
     # choose best directions based on nearest food available
     directions = {'left': 0, 'right': 0, 'up': 0, 'down': 0}
-    if(abs(closest[0] + 1) < abs(closest[0])):
+    if(abs(absmax[0] + 1) < abs(absmax[0])):
         directions['left'] = -1
-    if(abs(closest[0] - 1) < abs(closest[0])):
+    if(abs(absmax[0] - 1) < abs(absmax[0])):
         directions['right'] = 1
-    if(abs(closest[1] + 1) < abs(closest[1])):
+    if(abs(absmax[1] + 1) < abs(absmax[1])):
         directions['up'] = -1
-    if(abs(closest[1] - 1) < abs(closest[1])):
+    if(abs(absmax[1] - 1) < abs(absmax[1])):
         directions['down'] = 1
-
+        
+    currmax = 0
+    print(directions)
     # choose an available direction close to food
-    if(board[head[0] + directions['left'], head[1]] >= 1):
+    if(board[head[0] + directions['left'], head[1]] > currmax):
+        currmax = board[head[0] + directions['left'], head[1]]
         return 'left'
-    elif(board[head[0] + directions['right'], head[1]] >= 1):
+    elif(board[head[0] + directions['right'], head[1]] > currmax):
+        currmax = board[head[0] + directions['right'], head[1]]
         return 'right'
-    elif(board[head[0], head[1] + directions['up']] >= 1):
+    elif(board[head[0], head[1] + directions['up']] > currmax):
+        currmax = board[head[0], head[1] + directions['up']]
         return 'up'
-    elif(board[head[0], head[1] + directions['down']] >= 1):
-        return 'down'
-
-    # if no available direction exists closer to food, choose an arbitrary direction
-    if(board[head[0] - 1, head[1]] >= 1):
-        return 'left'
-    elif(board[head[0] + 1, head[1]] >= 1):
-        return 'right'
-    elif(board[head[0], head[1] - 1] >= 1):
-        return 'up'
-    else:
+    elif(board[head[0], head[1] + directions['down']] > currmax):
+        currmax = board[head[0], head[1] + directions['down']]
         return 'down'
 
 @bottle.post('/move')
 def move():
     data = bottle.request.json
     #print(json.dumps(data, indent=4))
+    np.set_printoptions(suppress=True)
 
-    board, food = getBoard(data)
+    # get player snakes head
+    x = data['you']['body']['data'][0]['x'] + 1
+    y = data['you']['body']['data'][0]['y'] + 1
+    head = [x, y]
+
+    board, absmax = getBoard(data)
 
     return {
-        'move': getDirection(data, board, food),
+        'move': getDirection(data, board, absmax, head),
         'taunt': 'I wont bite'
     }
 
