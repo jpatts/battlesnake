@@ -39,7 +39,7 @@ def getBoard(data):
     enemiesLocation = data['snakes']['data']
     for i in range(len(enemiesLocation)):
         snake = data['snakes']['data'][i]['body']['data']
-        for j in range(len(snake)):
+        for j in range(len(snake) - 1):
             x = snake[j]['y'] + 1
             y = snake[j]['x'] + 1
             board[x, y] = 0
@@ -48,7 +48,7 @@ def getBoard(data):
     for i in range(len(data['food']['data'])):
         x = data['food']['data'][i]['y'] + 1
         y = data['food']['data'][i]['x'] + 1
-        board[x, y] *= np.exp(1 / (data['you']['health'] / 100))
+        board[x, y] *= np.exp(1.0 / (float(data['you']['health']) / 200.0))
 
     # add weight to board
     goal = [0, 0]
@@ -91,9 +91,10 @@ def getWeight(board, x, y):
 
 from heapq import *
 
-
 def heuristic(a, b):
-    return abs(b[0] - a[0]) ** 2 + (b[1] - a[1]) ** 2
+    (x1, y1) = a
+    (x2, y2) = b
+    return abs(x1 - x2) + abs(y1 - y2)
 
 def astar(board, head, goal):
 
@@ -119,6 +120,7 @@ def astar(board, head, goal):
     while heap:
 
         current = heappop(heap)[1]
+        max = 0
 
         if current == goal:
             data = []
@@ -153,10 +155,13 @@ def astar(board, head, goal):
                 continue
                 
             if  tentative_G < G.get(neighbour, 0) or neighbour not in [i[1]for i in heap]:
+                if board[neighbour[0], neighbour[1]] < max:
+                    continue
                 visited[neighbour] = current
                 G[neighbour] = tentative_G
                 H[neighbour] = tentative_G + heuristic(neighbour, goal)
                 heappush(heap, (H[neighbour], neighbour))
+                max = board[neighbour[0], neighbour[1]]
                 
     return False
 
@@ -196,7 +201,6 @@ def getDirection(board, head, goal):
 @bottle.post('/move')
 def move():
     data = bottle.request.json
-    #print(json.dumps(data, indent=4))
     np.set_printoptions(suppress=True)
 
     # get player snakes head
