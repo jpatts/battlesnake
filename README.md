@@ -1,14 +1,14 @@
-# battlesnake-python
+# Description
 
-A simple [BattleSnake AI](http://battlesnake.io) written in Python. 
+[BattleSnake AI](http://battlesnake.io) written in Python, using weighted graphs and A* pathfinding to reach points of maximum entropy.
 
-Visit [battlesnake.io/readme](http://battlesnake.io/readme) for API documentation and instructions for running your AI.
+Visit [battlesnake.io/readme](http://battlesnake.io/readme) for API documentation.
 
 This AI client uses the [bottle web framework](http://bottlepy.org/docs/dev/index.html) to serve requests and the [gunicorn web server](http://gunicorn.org/) for running bottle on Heroku. Dependencies are listed in [requirements.txt](requirements.txt).
 
 [![Deploy](https://www.herokucdn.com/deploy/button.png)](https://heroku.com/deploy)
 
-#### You will need...
+#### Requirements
 
 * a working Python 2.7 development environment ([getting started guide](http://hackercodex.com/guide/python-development-environment-on-mac-osx/))
 * experience [deploying Python apps to Heroku](https://devcenter.heroku.com/articles/getting-started-with-python#introduction)
@@ -16,11 +16,11 @@ This AI client uses the [bottle web framework](http://bottlepy.org/docs/dev/inde
 
 ## Running the Snake Locally
 
-1) [Fork this repo](https://github.com/sendwithus/battlesnake-python/fork).
+1) [Fork this repo](https://github.com/jpatts/battlesnake).
 
 2) Clone repo to your development environment:
 ```
-git clone git@github.com:username/battlesnake-python.git
+git clone git@github.com:username/battlesnake.git
 ```
 
 3) Install dependencies using [pip](https://pip.pypa.io/en/latest/installing.html):
@@ -28,12 +28,15 @@ git clone git@github.com:username/battlesnake-python.git
 pip install -r requirements.txt
 ```
 
-4) Run local server:
+4) Run local server (make sure to specify your hostname to be your IP):
 ```
 python app/main.py
 ```
-
-5) Test client in your browser: [http://localhost:8080](http://localhost:8080).
+   
+5) Run the game server locally with Docker:
+```
+sudo docker run -it --rm -p 3000:3000 sendwithus/battlesnake-server
+```
 
 ## Deploying to Heroku
 
@@ -57,7 +60,3 @@ or visit [http://APP_NAME.herokuapp.com](http://APP_NAME.herokuapp.com).
 ```
 heroku logs --tail
 ```
-
-## Questions?
-
-Email [battlesnake@sendwithus.com](mailto:battlesnake@sendwithus.com), or tweet [@send_with_us](http://twitter.com/send_with_us).
